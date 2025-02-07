@@ -8,14 +8,16 @@ import pygame, time
 # definitions 
 #
 
-FPS = 30 # Frames Per Second
+FPS = 60 # Frames Per Second
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-BALL_WIDTH = 16
-BALL_HEIGHT = 16
+TANK_WIDTH = 300
+TANK_HEIGHT = 200
 
 ball_x = 0
 ball_speed_x = 6
+tank_x = SCREEN_WIDTH / 2 
+tank_y = SCREEN_HEIGHT = 215
 
 #
 # init game
@@ -25,16 +27,15 @@ pygame.init()
 font = pygame.font.SysFont('default', 64)
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 fps_clock = pygame.time.Clock()
+ball_location =(600, 1)
 
 #
 # read images
 #
 
-spritesheet = pygame.image.load('Breakout_Tile_Free.png').convert_alpha()   
+tank_img = pygame.image.load('tank.png').convert_alpha()    
+tank_img = pygame.transform.scale(tank_img, (TANK_WIDTH, TANK_HEIGHT))  
 
-ball_img = pygame.Surface((64, 64), pygame.SRCALPHA)  
-ball_img.blit(spritesheet, (0, 0), (1403, 652, 64, 64))   
-ball_img = pygame.transform.scale(ball_img, (BALL_WIDTH, BALL_HEIGHT))  
 
 #
 # game loop
@@ -43,6 +44,7 @@ ball_img = pygame.transform.scale(ball_img, (BALL_WIDTH, BALL_HEIGHT))
 print('mygame is running')
 running = True
 while running:
+    
     #
     # read events
     # 
@@ -61,7 +63,7 @@ while running:
     # bounce ball
     if ball_x < 0 : 
       ball_speed_x = abs(ball_speed_x) 
-    if ball_x + BALL_WIDTH > SCREEN_WIDTH: 
+    if ball_x + TANK_WIDTH > SCREEN_WIDTH: 
       ball_speed_x = abs(ball_speed_x) * -1 
 
     # 
@@ -76,12 +78,11 @@ while running:
     screen.fill('black') 
 
     # draw ball
-    screen.blit(ball_img, (ball_x, 0))
-    
+    screen.blit(tank_img, (tank_x,tank_y))
     # show screen
     pygame.display.flip() 
 
-    # 
+    
     # wait until next frame
     #
 
