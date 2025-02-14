@@ -18,23 +18,24 @@ TANK_HEIGHT = 80
 ball_x = 0
 ball_speed_x = 6
 tank_x = SCREEN_WIDTH / 2 
-tank_y = SCREEN_HEIGHT = 650
+tank_y = 650
 
 ENEMY_WIDTH = 100
 ENEMY_HEIGHT = 80 
 enemy_x = 0
-enemy_y = SCREEN_HEIGHT = 20 
+enemy_y = 20 
 
 #
 # init game
 #
-
+bg = pygame.image.load("tank.png")
 pygame.init()
 font = pygame.font.SysFont('default', 64)
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 fps_clock = pygame.time.Clock()
 ball_location =(600, 1)
-
+background = pygame.image.load('background.png').convert_alpha()
+background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))  
 #
 # read images
 #
@@ -89,7 +90,8 @@ while running:
     #
 
     # clear screen
-    screen.fill('black') 
+    screen.fill ((0, 0, 0,))
+    screen.blit(background, (0, 0))
 
     # draw ball
     screen.blit(tank_img,(tank_x,tank_y))
