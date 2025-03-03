@@ -61,8 +61,8 @@ while running:
     if remaining_time == 0:
         running = False
     
-    # Bereken het aantal verwachte vijanden
-    expected_enemies = (600 - remaining_time) // 30 + 1
+ 
+    expected_enemies = (600 - remaining_time) // 60 + 1
     while len(enemies) < expected_enemies:
         add_enemy()
     
