@@ -10,6 +10,8 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 TANK_WIDTH = 100
 TANK_HEIGHT = 80
+tank_x = SCREEN_WIDTH / 2 
+tank_y = 650
 BULLET_WIDTH = 10
 BULLET_HEIGHT = 20
 ENEMY_WIDTH = 100
@@ -18,25 +20,18 @@ EXPLOSION_HEIGHT = 75
 EXPLOSION_WIDTH = 75 
 EXPLOSION_TIJD = 0.25
 MAX_KOGELS = 4
-
-score = 0 
 FPS = 60
 TANK_SPEED = 5
 BULLET_SPEED = 7
 ENEMY_SPEED = 3
-GAME_DURATION = 600  # 10 minuten in seconden
+GAME_DURATION = 600  
+score = 0 
 
-# Posities
-tank_x = SCREEN_WIDTH / 2 
-tank_y = 650
-
-# Lijsten
 bullets = [] 
 explosions = []
 enemies = []
 enemy_speeds = []
 
-# Afbeeldingen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 background = pygame.image.load('background.png').convert_alpha()
 background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -48,21 +43,17 @@ bullet_img = pygame.image.load('bullet.png').convert_alpha()
 bullet_img = pygame.transform.scale(bullet_img, (BULLET_WIDTH, BULLET_HEIGHT))
 explosion_frames = [pygame.image.load(f'explosion{i}.png') for i in range(1, 6)]
 
-# Font voor score en tijd
 font = pygame.font.Font(None, 36)
 
 fps_clock = pygame.time.Clock()
 start_time = time.time()
 
-# Vijand toevoegen
 def add_enemy():
     enemies.append(pygame.Rect(random.randint(0, SCREEN_WIDTH - ENEMY_WIDTH), 20, ENEMY_WIDTH, ENEMY_HEIGHT))
     enemy_speeds.append(random.choice([-ENEMY_SPEED, ENEMY_SPEED]))
 
-# Eerste vijand toevoegen
 add_enemy()
 
-# Game loop
 running = True
 while running:
     elapsed_time = time.time() - start_time
@@ -78,7 +69,7 @@ while running:
     screen.fill((0, 0, 0))
     screen.blit(background, (0, 0))
     
-    # Event verwerking
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -92,7 +83,7 @@ while running:
     if keys[pygame.K_LEFT] and tank_x > 0:
         tank_x -= TANK_SPEED
     
-    # Kogels updaten
+    
     for bullet in bullets[:]:
         bullet.y -= BULLET_SPEED
         if bullet.y < 0:
@@ -107,24 +98,21 @@ while running:
                     score += 1  # Score verhogen bij explosie
                     break
     
-    # Zorg ervoor dat verslagen vijanden terugkeren
     while len(enemies) < expected_enemies:
         add_enemy()
     
-    # Vijanden updaten
     for i, enemy in enumerate(enemies):
         enemy.x += enemy_speeds[i]
         if enemy.x < 0 or enemy.x + ENEMY_WIDTH > SCREEN_WIDTH:
             enemy_speeds[i] *= -1
     
-    # Explosies
+    
     for explosion in explosions[:]:
         if time.time() - explosion[2] > EXPLOSION_TIJD:
             explosions.remove(explosion)
         else:
             explosion[3] = min(4, int((time.time() - explosion[2]) * 5))
     
-    # Tekenen
     screen.blit(tank_img, (tank_x, tank_y))
     for enemy in enemies:
         screen.blit(enemy_img, (enemy.x, enemy.y))
@@ -133,7 +121,6 @@ while running:
     for explosion in explosions:
         screen.blit(explosion_frames[explosion[3]], (explosion[0], explosion[1])) 
     
-    # Score en tijd weergeven
     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
     time_text = font.render(f"Tijd: {remaining_time}s", True, (255, 255, 255))
     screen.blit(score_text, (10, 10))
