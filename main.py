@@ -49,31 +49,36 @@ explosion_frames = [pygame.image.load(f'explosion{i}.png') for i in range(1, 6)]
 
 # Font voor score
 font = pygame.font.Font(None, 36)
-
+start_time = time.time()
 fps_clock = pygame.time.Clock()
 
 # Game loop
 running = True
 while running:
-    screen.fill((0, 0, 0))
-    screen.blit(background, (0, 0))
+     elapsed_time = time.time() - start_time
+     remaining_time = max(0, GAME_TIJD - int(elapsed_time))
+     if remaining_time == 0:
+        running = False
+        
+     screen.fill((0, 0, 0))
+     screen.blit(background, (0, 0))
    
     # Event verwerking
-    for event in pygame.event.get():
+     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:  
                 bullets.append(pygame.Rect(tank_x + TANK_WIDTH // 2 - BULLET_WIDTH // 2, tank_y, BULLET_WIDTH, BULLET_HEIGHT))
     
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_RIGHT] and tank_x < SCREEN_WIDTH - TANK_WIDTH:
+     keys = pygame.key.get_pressed()
+     if keys[pygame.K_RIGHT] and tank_x < SCREEN_WIDTH - TANK_WIDTH:
         tank_x += TANK_SPEED
-    if keys[pygame.K_LEFT] and tank_x > 0:
+     if keys[pygame.K_LEFT] and tank_x > 0:
         tank_x -= TANK_SPEED
     
     # Kogels updaten
-    for bullet in bullets[:]:
+     for bullet in bullets[:]:
         bullet.y -= BULLET_SPEED
         if bullet.y < 0:
             bullets.remove(bullet)  
@@ -88,32 +93,37 @@ while running:
                     break
     
     # Vijand updaten
-    for enemy in enemies:
+     for enemy in enemies:
         enemy.x += ball_speed_x
-    if enemy.x < 0 or enemy.x + ENEMY_WIDTH > SCREEN_WIDTH:
+     if enemy.x < 0 or enemy.x + ENEMY_WIDTH > SCREEN_WIDTH:
         ball_speed_x *= -1
   
+     
+  
+  
     # Explosie
-    for explosion in explosions[:]:
+     for explosion in explosions[:]:
         if time.time() - explosion[2] > EXPLOSION_TIJD:
             explosions.remove(explosion)
         else:
             explosion[3] = min(4, int((time.time() - explosion[2]) * 5))
     
     # Tekenen
-    screen.blit(tank_img, (tank_x, tank_y))
-    for enemy in enemies:
+     screen.blit(tank_img, (tank_x, tank_y))
+     for enemy in enemies:
         screen.blit(enemy_img, (enemy.x, enemy.y))
-    for bullet in bullets:
+     for bullet in bullets:
         screen.blit(bullet_img, (bullet.x, bullet.y))  
-    for explosion in explosions:
+     for explosion in explosions:
         screen.blit(explosion_frames[explosion[3]], (explosion[0], explosion[1])) 
     
     # Score weergeven
-    score_text = font.render(f"Score: {score}", True, (255, 255, 255))
-    screen.blit(score_text, (10, 10))
-    
-    pygame.display.flip()
-    fps_clock.tick(FPS)
-    
+     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+     time_text = font.render(f"Tijd: {remaining_time}s", True, (255, 255, 255))
+     screen.blit(score_text, (10, 10))
+     screen.blit(time_text, (10, 50))
+   
+     pygame.display.flip()  
+     fps_clock.tick(FPS)
+     
 pygame.quit()
