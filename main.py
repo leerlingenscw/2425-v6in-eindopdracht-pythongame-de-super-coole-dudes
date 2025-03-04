@@ -26,6 +26,7 @@ BULLET_SPEED = 7
 ENEMY_SPEED = 3
 GAME_DURATION = 600  
 score = 0 
+remaining_levens = 3 
 
 bullets = [] 
 explosions = []
@@ -58,17 +59,15 @@ running = True
 while running:
     elapsed_time = time.time() - start_time
     remaining_time = max(0, GAME_DURATION - int(elapsed_time))
-    if remaining_time == 0:
+    if remaining_time == 0 or remaining_levens <= 0:
         running = False
     
- 
-    expected_enemies = (600 - remaining_time) // 60 + 1
+    expected_enemies = (600 - remaining_time) // 45 + 1
     while len(enemies) < expected_enemies:
         add_enemy()
     
     screen.fill((0, 0, 0))
     screen.blit(background, (0, 0))
-    
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -82,7 +81,6 @@ while running:
         tank_x += TANK_SPEED
     if keys[pygame.K_LEFT] and tank_x > 0:
         tank_x -= TANK_SPEED
-    
     
     for bullet in bullets[:]:
         bullet.y -= BULLET_SPEED
@@ -98,15 +96,16 @@ while running:
                     score += 1  # Score verhogen bij explosie
                     break
     
-    while len(enemies) < expected_enemies:
-        add_enemy()
-    
-    for i, enemy in enumerate(enemies):
+    for i, enemy in enumerate(enemies[:]):
         enemy.x += enemy_speeds[i]
         if enemy.x < 0 or enemy.x + ENEMY_WIDTH > SCREEN_WIDTH:
             enemy_speeds[i] *= -1
-    
-    
+        
+        if enemy.y + ENEMY_HEIGHT > SCREEN_HEIGHT:
+            enemies.pop(i)
+            enemy_speeds.pop(i)
+            remaining_levens -= 1
+            
     for explosion in explosions[:]:
         if time.time() - explosion[2] > EXPLOSION_TIJD:
             explosions.remove(explosion)
@@ -123,8 +122,10 @@ while running:
     
     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
     time_text = font.render(f"Tijd: {remaining_time}s", True, (255, 255, 255))
+    levens_text = font.render(f"Levens: {remaining_levens}", True, (255, 255, 255))
     screen.blit(score_text, (10, 10))
     screen.blit(time_text, (10, 50))
+    screen.blit(levens_text, (10, 90))
     
     pygame.display.flip()
     fps_clock.tick(FPS)
