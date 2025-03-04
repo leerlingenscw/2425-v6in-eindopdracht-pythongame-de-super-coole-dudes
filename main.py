@@ -1,5 +1,4 @@
 import pygame
-import math
 import random
 import time
 
@@ -16,14 +15,15 @@ BULLET_WIDTH = 10
 BULLET_HEIGHT = 20
 ENEMY_WIDTH = 100
 ENEMY_HEIGHT = 80
-EXPLOSION_HEIGHT = 75
-EXPLOSION_WIDTH = 75 
+BOMB_WIDTH = 15
+BOMB_HEIGHT = 25
 EXPLOSION_TIJD = 0.25
 MAX_KOGELS = 4
 FPS = 60
 TANK_SPEED = 5
 BULLET_SPEED = 7
 ENEMY_SPEED = 3
+BOMB_SPEED = 5
 GAME_DURATION = 600  
 score = 0 
 remaining_levens = 3 
@@ -32,6 +32,7 @@ bullets = []
 explosions = []
 enemies = []
 enemy_speeds = []
+bombs = []
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 background = pygame.image.load('background.png').convert_alpha()
@@ -42,6 +43,8 @@ enemy_img = pygame.image.load('enemy.png').convert_alpha()
 enemy_img = pygame.transform.scale(enemy_img, (ENEMY_WIDTH, ENEMY_HEIGHT))
 bullet_img = pygame.image.load('bullet.png').convert_alpha()
 bullet_img = pygame.transform.scale(bullet_img, (BULLET_WIDTH, BULLET_HEIGHT))
+bomb_img = pygame.image.load('bomb.png').convert_alpha()
+bomb_img = pygame.transform.scale(bomb_img, (BOMB_WIDTH, BOMB_HEIGHT))
 explosion_frames = [pygame.image.load(f'explosion{i}.png') for i in range(1, 6)]
 
 font = pygame.font.Font(None, 36)
@@ -53,7 +56,14 @@ def add_enemy():
     enemies.append(pygame.Rect(random.randint(0, SCREEN_WIDTH - ENEMY_WIDTH), 20, ENEMY_WIDTH, ENEMY_HEIGHT))
     enemy_speeds.append(random.choice([-ENEMY_SPEED, ENEMY_SPEED]))
 
+def drop_bomb():
+    if enemies:
+        enemy = random.choice(enemies)
+        bombs.append(pygame.Rect(enemy.x + ENEMY_WIDTH // 2 - BOMB_WIDTH // 2, enemy.y + ENEMY_HEIGHT, BOMB_WIDTH, BOMB_HEIGHT))
+
 add_enemy()
+
+drop_bomb_time = time.time()
 
 running = True
 while running:
@@ -65,6 +75,10 @@ while running:
     expected_enemies = (600 - remaining_time) // 45 + 1
     while len(enemies) < expected_enemies:
         add_enemy()
+    
+    if time.time() - drop_bomb_time > 2:
+        drop_bomb()
+        drop_bomb_time = time.time()
     
     screen.fill((0, 0, 0))
     screen.blit(background, (0, 0))
@@ -100,12 +114,16 @@ while running:
         enemy.x += enemy_speeds[i]
         if enemy.x < 0 or enemy.x + ENEMY_WIDTH > SCREEN_WIDTH:
             enemy_speeds[i] *= -1
-        
-        if enemy.y + ENEMY_HEIGHT > SCREEN_HEIGHT:
-            enemies.pop(i)
-            enemy_speeds.pop(i)
+    
+    for bomb in bombs[:]:
+        bomb.y += BOMB_SPEED
+        if bomb.y > SCREEN_HEIGHT:
+            bombs.remove(bomb)
+        elif bomb.colliderect(pygame.Rect(tank_x, tank_y, TANK_WIDTH, TANK_HEIGHT)):
+            explosions.append([tank_x, tank_y, time.time(), 0])
+            bombs.remove(bomb)
             remaining_levens -= 1
-            
+    
     for explosion in explosions[:]:
         if time.time() - explosion[2] > EXPLOSION_TIJD:
             explosions.remove(explosion)
@@ -117,6 +135,8 @@ while running:
         screen.blit(enemy_img, (enemy.x, enemy.y))
     for bullet in bullets:
         screen.blit(bullet_img, (bullet.x, bullet.y))  
+    for bomb in bombs:
+        screen.blit(bomb_img, (bomb.x, bomb.y))
     for explosion in explosions:
         screen.blit(explosion_frames[explosion[3]], (explosion[0], explosion[1])) 
     
