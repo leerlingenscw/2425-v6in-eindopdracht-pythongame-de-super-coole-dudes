@@ -9,7 +9,7 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 TANK_WIDTH = 100
 TANK_HEIGHT = 80
-tank_x = SCREEN_WIDTH / 2 
+tank_x = SCREEN_WIDTH / 2
 tank_y = 650
 BULLET_WIDTH = 10
 BULLET_HEIGHT = 20
@@ -24,15 +24,16 @@ TANK_SPEED = 5
 BULLET_SPEED = 7
 ENEMY_SPEED = 3
 BOMB_SPEED = 5
-GAME_DURATION = 600  
-score = 0 
-remaining_levens = 3 
+GAME_DURATION = 600
+score = 0
+remaining_levens = 3
 
-bullets = [] 
+bullets = []
 explosions = []
 enemies = []
 enemy_speeds = []
 bombs = []
+powerups = []
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 background = pygame.image.load('background.png').convert_alpha()
@@ -46,6 +47,14 @@ bullet_img = pygame.transform.scale(bullet_img, (BULLET_WIDTH, BULLET_HEIGHT))
 bomb_img = pygame.image.load('bomb.png').convert_alpha()
 bomb_img = pygame.transform.scale(bomb_img, (BOMB_WIDTH, BOMB_HEIGHT))
 explosion_frames = [pygame.image.load(f'explosion{i}.png') for i in range(1, 6)]
+
+# Power-up afbeeldingen en schaling naar 50x50
+powerup_images = {
+    "speed": pygame.transform.scale(pygame.image.load('faster_bullets.png').convert_alpha(), (50, 50)),
+    "invincible": pygame.transform.scale(pygame.image.load('invincible.png').convert_alpha(), (50, 50)),
+    "more_bullets": pygame.transform.scale(pygame.image.load('extra_bullet.png').convert_alpha(), (50, 50)),
+    "extra_life": pygame.transform.scale(pygame.image.load('plus_one_life.png').convert_alpha(), (50, 50))
+}
 
 font = pygame.font.Font(None, 36)
 
@@ -61,9 +70,33 @@ def drop_bomb():
         enemy = random.choice(enemies)
         bombs.append(pygame.Rect(enemy.x + ENEMY_WIDTH // 2 - BOMB_WIDTH // 2, enemy.y + ENEMY_HEIGHT, BOMB_WIDTH, BOMB_HEIGHT))
 
+def create_powerup(x, y):
+    powerup_type = random.choice(["speed", "invincible", "more_bullets", "extra_life"])
+    powerups.append({"type": powerup_type, "rect": pygame.Rect(x, y, 50, 50), "image": powerup_images[powerup_type]})
+
+def handle_powerups():
+    global BULLET_SPEED, TANK_SPEED, MAX_KOGELS, remaining_levens
+    for powerup in powerups[:]:
+        if powerup["rect"].colliderect(pygame.Rect(tank_x, tank_y, TANK_WIDTH, TANK_HEIGHT)):
+            if powerup["type"] == "speed":
+                BULLET_SPEED += 2
+            elif powerup["type"] == "invincible":
+                global invincible_timer
+                invincible_timer = time.time() + 10  
+            elif powerup["type"] == "more_bullets":
+                MAX_KOGELS += 2
+            elif powerup["type"] == "extra_life":
+                remaining_levens += 1
+            powerups.remove(powerup)
+
+def check_for_powerups():
+    if random.random() < 0.1:  
+        create_powerup(random.randint(0, SCREEN_WIDTH - 50), 0) 
+
 add_enemy()
 
 drop_bomb_time = time.time()
+invincible_timer = 0  
 
 running = True
 while running:
@@ -99,7 +132,7 @@ while running:
     for bullet in bullets[:]:
         bullet.y -= BULLET_SPEED
         if bullet.y < 0:
-            bullets.remove(bullet)  
+            bullets.remove(bullet)
         else:
             for i, enemy in enumerate(enemies[:]):
                 if bullet.colliderect(enemy):
@@ -107,10 +140,11 @@ while running:
                     explosions.append([enemy.x, enemy.y, time.time(), 0])
                     del enemies[i]
                     del enemy_speeds[i]
-                    score += 1  # Score verhogen bij explosie
+                    score += 1  
+                    check_for_powerups()  
                     break
     
-    for i, enemy in enumerate(enemies[:]):
+    for i, enemy in enumerate(enemies[:] ):
         enemy.x += enemy_speeds[i]
         if enemy.x < 0 or enemy.x + ENEMY_WIDTH > SCREEN_WIDTH:
             enemy_speeds[i] *= -1
@@ -130,15 +164,25 @@ while running:
         else:
             explosion[3] = min(4, int((time.time() - explosion[2]) * 5))
     
+    # Laat de power-ups vallen
+    for powerup in powerups[:]:
+        powerup["rect"].y += 3  
+        if powerup["rect"].y > SCREEN_HEIGHT:
+            powerups.remove(powerup) 
+        else:
+            screen.blit(powerup["image"], (powerup["rect"].x, powerup["rect"].y))
+
+    handle_powerups()  
+
     screen.blit(tank_img, (tank_x, tank_y))
     for enemy in enemies:
         screen.blit(enemy_img, (enemy.x, enemy.y))
     for bullet in bullets:
-        screen.blit(bullet_img, (bullet.x, bullet.y))  
+        screen.blit(bullet_img, (bullet.x, bullet.y))
     for bomb in bombs:
         screen.blit(bomb_img, (bomb.x, bomb.y))
     for explosion in explosions:
-        screen.blit(explosion_frames[explosion[3]], (explosion[0], explosion[1])) 
+        screen.blit(explosion_frames[explosion[3]], (explosion[0], explosion[1]))
     
     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
     time_text = font.render(f"Tijd: {remaining_time}s", True, (255, 255, 255))
@@ -149,5 +193,5 @@ while running:
     
     pygame.display.flip()
     fps_clock.tick(FPS)
-    
+
 pygame.quit()
