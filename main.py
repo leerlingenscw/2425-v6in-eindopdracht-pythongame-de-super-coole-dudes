@@ -72,9 +72,11 @@ def add_enemy():
     enemy_speeds.append(random.choice([-ENEMY_SPEED, ENEMY_SPEED]))
 
 def drop_bombs():
-    for enemy in enemies:
+    for enemy in enemies:  
         if random.random() < 0.6:  
-            bombs.append(pygame.Rect(enemy.x + ENEMY_WIDTH // 2 - BOMB_WIDTH // 2, enemy.y + ENEMY_HEIGHT, BOMB_WIDTH, BOMB_HEIGHT))
+            bomb_x = enemy.x + ENEMY_WIDTH // 2 - BOMB_WIDTH // 2
+            bomb_y = enemy.y + ENEMY_HEIGHT
+            bombs.append(pygame.Rect(bomb_x, bomb_y, BOMB_WIDTH, BOMB_HEIGHT))
 
 def create_powerup(x, y):
     powerup_type = random.choice(["speed", "invincible", "more_bullets", "extra_life"])
