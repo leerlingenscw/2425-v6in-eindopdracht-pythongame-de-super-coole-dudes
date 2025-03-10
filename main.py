@@ -2,10 +2,7 @@ import pygame
 import random
 import time
 
-
 pygame.init()
-
-
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -103,7 +100,6 @@ def check_for_powerups():
         create_powerup(random.randint(0, SCREEN_WIDTH - 50), 0) 
 
 def show_death_screen():
-    
     screen.fill((0, 0, 0))  
     screen.blit(game_over_img, (0, 0))  
     pygame.display.flip()
@@ -120,7 +116,9 @@ while running:
 
     if remaining_time == 0 or remaining_levens <= 0:
         if remaining_levens <= 0:
-            waiting_for_restart = True
+            show_death_screen()  # Show Game Over screen
+            pygame.display.flip()  # Ensure screen is updated
+        waiting_for_restart = True
         while waiting_for_restart:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -128,7 +126,6 @@ while running:
                     waiting_for_restart = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:  
-                       
                         tank_x = SCREEN_WIDTH / 2
                         tank_y = 650
                         bullets.clear()
@@ -186,7 +183,6 @@ while running:
                     del enemy_speeds[i]
                     score += 1  
                     check_for_powerups()  
-                    
                     break
     
     for i, enemy in enumerate(enemies[:] ):
@@ -209,7 +205,6 @@ while running:
         else:
             explosion[3] = min(4, int((time.time() - explosion[2]) * 5))
     
-  
     for powerup in powerups[:]:
         powerup["rect"].y += 3  
         if powerup["rect"].y > SCREEN_HEIGHT:
@@ -239,4 +234,4 @@ while running:
     pygame.display.flip()
     fps_clock.tick(FPS)
 
-pygame.quit()
+
