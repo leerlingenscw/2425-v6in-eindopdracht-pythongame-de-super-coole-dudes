@@ -51,7 +51,6 @@ explosion_frames = [pygame.image.load(f'explosion{i}.png') for i in range(1, 6)]
 game_over_img = pygame.image.load('game_over.png').convert_alpha()  # Game Over image
 game_over_img = pygame.transform.scale(game_over_img, (SCREEN_WIDTH, SCREEN_HEIGHT)) 
 
-# Power-up afbeeldingen en schaling naar 50x50
 powerup_images = {
     "speed": pygame.transform.scale(pygame.image.load('faster_bullets.png').convert_alpha(), (50, 50)),
     "invincible": pygame.transform.scale(pygame.image.load('invincible.png').convert_alpha(), (50, 50)),
@@ -116,8 +115,8 @@ while running:
 
     if remaining_time == 0 or remaining_levens <= 0:
         if remaining_levens <= 0:
-            show_death_screen()  # Show Game Over screen
-            pygame.display.flip()  # Ensure screen is updated
+            show_death_screen()  
+            pygame.display.flip()  
         waiting_for_restart = True
         while waiting_for_restart:
             for event in pygame.event.get():
